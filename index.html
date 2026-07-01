@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>LUX — Résultat</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Rajdhani:wght@300;400;600&display=swap');
+
+  :root {
+    --black:      #080808;
+    --deep:       #0f0f0f;
+    --panel:      #141414;
+    --border:     #1e1e1e;
+    --red:        #c0392b;
+    --red-glow:   #e74c3c;
+    --red-dim:    #7b1a12;
+    --white:      #f0f0f0;
+    --grey:       #555;
+    --grey-lt:    #888;
+    --green:      #27ae60;
+    --green-glow: #2ecc71;
+    --orange:     #e67e22;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--black);
+    color: var(--white);
+    font-family: 'Rajdhani', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+  }
+
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background:
+      repeating-linear-gradient(90deg, transparent, transparent 80px, rgba(192,57,43,0.03) 80px, rgba(192,57,43,0.03) 81px),
+      repeating-linear-gradient(0deg, transparent, transparent 80px, rgba(192,57,43,0.03) 80px, rgba(192,57,43,0.03) 81px);
+    pointer-events: none; z-index: 0;
+  }
+
+  .red-line { height: 2px; background: linear-gradient(90deg, transparent, var(--red), transparent); }
+
+  /* Top bar */
+  .topbar {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 14px 32px; border-bottom: 1px solid var(--border);
+    background: var(--deep); position: relative; z-index: 10;
+  }
+  .topbar-left { display: flex; align-items: center; gap: 14px; }
+  .logo-mini {
+    font-family: 'Cinzel', serif; font-size: 20px; font-weight: 900;
+    color: var(--red-glow); text-shadow: 0 0 10px rgba(231,76,60,0.5); letter-spacing: 4px;
+  }
+  .page-title {
+    font-size: 11px; letter-spacing: 3px; color: var(--grey);
+    text-transform: uppercase; border-left: 1px solid var(--border); padding-left: 14px;
+  }
+  .lang-switcher { display: flex; gap: 6px; }
+  .lang-btn {
+    background: none; border: 1px solid var(--border); color: var(--grey-lt);
+    padding: 4px 10px; font-family: 'Rajdhani', sans-serif;
+    font-size: 11px; letter-spacing: 1px; cursor: pointer; transition: all 0.2s;
+  }
+  .lang-btn:hover, .lang-btn.active { border-color: var(--red); color: var(--red-glow); }
+
+  /* Steps */
+  .nav-steps {
+    display: flex; align-items: center; padding: 12px 32px;
+    background: var(--deep); border-bottom: 1px solid var(--border);
+    gap: 0; position: relative; z-index: 9;
+  }
+  .step {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--grey); padding: 0 20px 0 0;
+  }
+  .step.active { color: var(--white); }
+  .step.done { color: var(--red-dim); }
+  .step-num {
+    width: 22px; height: 22px; border-radius: 50%;
+    border: 1px solid var(--grey);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-family: 'Cinzel', serif;
+  }
+  .step.active .step-num { border-color: var(--green-glow); color: var(--green-glow); box-shadow: 0 0 8px rgba(46,204,113,0.4); }
+  .step.done .step-num { border-color: var(--red-dim); background: var(--red-dim); color: #fff; }
+  .step-arrow { color: var(--border); margin-right: 20px; font-size: 14px; }
+
+  /* Main */
+  .main {
+    flex: 1; display: flex; gap: 0;
+    position: relative; z-index: 1; overflow: hidden;
+  }
+
+  /* Left panel */
+  .panel-left {
+    width: 45%; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 36px; border-right: 1px solid var(--border); gap: 24px;
+  }
+
+  /* Result badge */
+  .result-badge {
+    position: relative; width: 140px; height: 140px;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .badge-ring {
+    position: absolute; inset: 0; border-radius: 50%;
+    border: 2px solid var(--green);
+    box-shadow: 0 0 30px rgba(46,204,113,0.3), inset 0 0 30px rgba(46,204,113,0.05);
+    animation: glow-pulse 2s infinite;
+  }
+
+  @keyframes glow-pulse {
+    0%, 100% { box-shadow: 0 0 20px rgba(46,204,113,0.3); }
+    50% { box-shadow: 0 0 40px rgba(46,204,113,0.6); }
+  }
+
+  .badge-ring-outer {
+    position: absolute; inset: -10px; border-radius: 50%;
+    border: 1px solid rgba(46,204,113,0.2);
+    animation: spin-slow 15s linear infinite;
+  }
+
+  @keyframes spin-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+  .badge-icon { font-size: 56px; position: relative; z-index: 1; }
+
+  /* Result title */
+  .result-title-block { text-align: center; }
+
+  .result-headline {
+    font-family: 'Cinzel', serif; font-size: 26px; font-weight: 900;
+    color: var(--green-glow); letter-spacing: 4px;
+    text-shadow: 0 0 20px rgba(46,204,113,0.4);
+    line-height: 1.2;
+  }
+
+  .result-sub {
+    margin-top: 8px; font-size: 11px; letter-spacing: 3px;
+    color: var(--grey-lt); text-transform: uppercase;
+  }
+
+  /* Stats summary */
+  .stats-row {
+    display: flex; gap: 0; width: 100%;
+    border: 1px solid var(--border);
+  }
+  .stat-box {
+    flex: 1; padding: 14px 10px; text-align: center;
+    border-right: 1px solid var(--border);
+    background: var(--panel);
+  }
+  .stat-box:last-child { border-right: none; }
+  .stat-val {
+    font-family: 'Cinzel', serif; font-size: 20px; font-weight: 700;
+    color: var(--white); line-height: 1;
+  }
+  .stat-val.green { color: var(--green-glow); }
+  .stat-lbl {
+    margin-top: 5px; font-size: 9px; letter-spacing: 2px;
+    color: var(--grey); text-transform: uppercase;
+  }
+
+  /* Action buttons */
+  .result-actions { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+
+  .btn-primary {
+    background: var(--red); border: none; color: #fff;
+    padding: 13px; font-family: 'Rajdhani', sans-serif;
+    font-size: 14px; font-weight: 600; letter-spacing: 3px;
+    text-transform: uppercase; cursor: pointer; transition: all 0.2s;
+    clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+    width: 100%;
+  }
+  .btn-primary:hover { background: var(--red-glow); box-shadow: 0 0 20px rgba(231,76,60,0.4); }
+
+  .btn-secondary {
+    background: transparent; border: 1px solid var(--border); color: var(--grey-lt);
+    padding: 13px; font-family: 'Rajdhani', sans-serif;
+    font-size: 14px; font-weight: 600; letter-spacing: 3px;
+    text-transform: uppercase; cursor: pointer; transition: all 0.2s;
+    clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+    width: 100%;
+  }
+  .btn-secondary:hover { border-color: var(--red-dim); color: var(--white); }
+
+  /* Right panel */
+  .panel-right {
+    width: 55%; display: flex; flex-direction: column;
+    padding: 28px; gap: 18px; overflow-y: auto;
+  }
+
+  .section-title {
+    font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: 3px;
+    color: var(--red-glow); text-transform: uppercase;
+    padding-bottom: 10px; border-bottom: 1px solid var(--border);
+  }
+
+  /* Partition result table */
+  .partition-table { display: flex; flex-direction: column; gap: 6px; }
+
+  .part-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 14px; background: var(--panel);
+    border: 1px solid var(--border); border-left: 3px solid var(--green);
+  }
+  .part-row.warn { border-left-color: var(--orange); }
+
+  .part-row-left { display: flex; align-items: center; gap: 10px; }
+  .part-row-icon { font-size: 14px; }
+  .part-row-name { font-size: 12px; font-weight: 600; letter-spacing: 2px; color: var(--white); text-transform: uppercase; }
+  .part-row-size { font-size: 10px; color: var(--grey-lt); margin-top: 2px; letter-spacing: 1px; }
+
+  .part-row-right { display: flex; align-items: center; gap: 10px; }
+  .part-badge {
+    font-size: 9px; letter-spacing: 2px; padding: 3px 10px;
+    text-transform: uppercase;
+  }
+  .part-badge.ok { background: rgba(46,204,113,0.15); color: var(--green-glow); border: 1px solid var(--green); }
+  .part-badge.warn { background: rgba(230,126,34,0.15); color: var(--orange); border: 1px solid var(--orange); }
+  .part-time { font-size: 10px; color: var(--grey); letter-spacing: 1px; }
+
+  /* Log rapport */
+  .log-box {
+    background: var(--panel); border: 1px solid var(--border);
+    padding: 12px; font-family: 'Courier New', monospace;
+    font-size: 10px; color: var(--grey-lt);
+    height: 110px; overflow-y: auto; line-height: 1.9; flex-shrink: 0;
+  }
+  .log-line { display: block; }
+  .log-line.ok { color: var(--green); }
+  .log-line.info { color: var(--grey-lt); }
+  .log-line.warn { color: var(--orange); }
+
+  /* Pro upsell banner */
+  .pro-banner {
+    background: var(--panel); border: 1px solid var(--red-dim);
+    border-left: 3px solid var(--red);
+    padding: 14px 16px;
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  }
+  .pro-banner-text { flex: 1; }
+  .pro-banner-title { font-size: 13px; font-weight: 600; color: var(--white); letter-spacing: 1px; }
+  .pro-banner-desc { font-size: 10px; color: var(--grey-lt); letter-spacing: 1px; margin-top: 3px; }
+  .btn-upgrade {
+    background: var(--red); border: none; color: #fff;
+    padding: 8px 20px; font-family: 'Rajdhani', sans-serif;
+    font-size: 12px; font-weight: 600; letter-spacing: 2px;
+    text-transform: uppercase; cursor: pointer; white-space: nowrap;
+    transition: all 0.2s; flex-shrink: 0;
+  }
+  .btn-upgrade:hover { background: var(--red-glow); }
+
+  /* Bottom bar */
+  .bottombar {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 32px; border-top: 1px solid var(--border);
+    background: var(--deep); position: relative; z-index: 10;
+  }
+  .bottom-info { font-size: 10px; letter-spacing: 1.5px; color: var(--grey); text-transform: uppercase; }
+  .bottom-info span { color: var(--red-dim); }
+
+  @media (max-width: 700px) {
+    .main { flex-direction: column; overflow-y: auto; }
+    .panel-left, .panel-right { width: 100%; }
+    .panel-left { border-right: none; border-bottom: 1px solid var(--border); }
+  }
+</style>
+</head>
+<body>
+
+<div class="red-line"></div>
+
+<!-- Top bar -->
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="logo-mini">LUX</div>
+    <div class="page-title" id="page-title">Rapport Final</div>
+  </div>
+  <div class="lang-switcher">
+    <button class="lang-btn active" onclick="setLang('fr')">FR</button>
+    <button class="lang-btn" onclick="setLang('es')">ES</button>
+  </div>
+</div>
+
+<!-- Steps -->
+<div class="nav-steps">
+  <div class="step done"><div class="step-num">✓</div><span id="step1">Accueil</span></div>
+  <div class="step-arrow">›</div>
+  <div class="step done"><div class="step-num">✓</div><span id="step2">Détection</span></div>
+  <div class="step-arrow">›</div>
+  <div class="step done"><div class="step-num">✓</div><span id="step3">Flash</span></div>
+  <div class="step-arrow">›</div>
+  <div class="step active"><div class="step-num">✓</div><span id="step4">Résultat</span></div>
+</div>
+
+<!-- Main -->
+<div class="main">
+
+  <!-- Left -->
+  <div class="panel-left">
+
+    <div class="result-badge">
+      <div class="badge-ring-outer"></div>
+      <div class="badge-ring"></div>
+      <div class="badge-icon">✅</div>
+    </div>
+
+    <div class="result-title-block">
+      <div class="result-headline" id="result-headline">FLASH RÉUSSI</div>
+      <div class="result-sub" id="result-sub">Opération terminée sans erreur</div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-box">
+        <div class="stat-val green">5/5</div>
+        <div class="stat-lbl" id="stat-parts">Partitions</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val">2m 14s</div>
+        <div class="stat-lbl" id="stat-time">Durée</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val green">0</div>
+        <div class="stat-lbl" id="stat-errors">Erreurs</div>
+      </div>
+    </div>
+
+    <div class="result-actions">
+      <button class="btn-primary" id="btn-new">⚡ &nbsp;Nouveau Flash</button>
+      <button class="btn-secondary" id="btn-report">📄 &nbsp;Exporter le Rapport</button>
+      <button class="btn-secondary" id="btn-home">🏠 &nbsp;Retour Accueil</button>
+    </div>
+
+  </div>
+
+  <!-- Right -->
+  <div class="panel-right">
+
+    <div class="section-title" id="sec-partitions">Résultat par Partition</div>
+
+    <div class="partition-table">
+      <div class="part-row">
+        <div class="part-row-left">
+          <div class="part-row-icon">⚡</div>
+          <div>
+            <div class="part-row-name">BOOTLOADER</div>
+            <div class="part-row-size">8.4 MB</div>
+          </div>
+        </div>
+        <div class="part-row-right">
+          <div class="part-time">0m 18s</div>
+          <div class="part-badge ok" id="b-boot">SUCCÈS</div>
+        </div>
+      </div>
+      <div class="part-row">
+        <div class="part-row-left">
+          <div class="part-row-icon">🔧</div>
+          <div>
+            <div class="part-row-name">RECOVERY</div>
+            <div class="part-row-size">32.1 MB</div>
+          </div>
+        </div>
+        <div class="part-row-right">
+          <div class="part-time">0m 22s</div>
+          <div class="part-badge ok" id="b-rec">SUCCÈS</div>
+        </div>
+      </div>
+      <div class="part-row">
+        <div class="part-row-left">
+          <div class="part-row-icon">💾</div>
+          <div>
+            <div class="part-row-name">SYSTEM</div>
+            <div class="part-row-size">3.2 GB</div>
+          </div>
+        </div>
+        <div class="part-row-right">
+          <div class="part-time">1m 04s</div>
+          <div class="part-badge ok" id="b-sys">SUCCÈS</div>
+        </div>
+      </div>
+      <div class="part-row">
+        <div class="part-row-left">
+          <div class="part-row-icon">📁</div>
+          <div>
+            <div class="part-row-name">USERDATA</div>
+            <div class="part-row-size">512 MB</div>
+          </div>
+        </div>
+        <div class="part-row-right">
+          <div class="part-time">0m 24s</div>
+          <div class="part-badge ok" id="b-usr">SUCCÈS</div>
+        </div>
+      </div>
+      <div class="part-row">
+        <div class="part-row-left">
+          <div class="part-row-icon">📡</div>
+          <div>
+            <div class="part-row-name">MODEM</div>
+            <div class="part-row-size">128 MB</div>
+          </div>
+        </div>
+        <div class="part-row-right">
+          <div class="part-time">0m 26s</div>
+          <div class="part-badge ok" id="b-mod">SUCCÈS</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-title" id="sec-log">Journal Complet</div>
+
+    <div class="log-box">
+      <span class="log-line ok">✓ LUX v1.0 — Session démarrée.</span>
+      <span class="log-line info">› Appareil : Samsung SM-A135F</span>
+      <span class="log-line info">› Chipset  : Exynos 850</span>
+      <span class="log-line info">› Firmware : SM-A135F_Android13_v5.1.zip</span>
+      <span class="log-line ok">✓ BOOTLOADER flashé — 0m 18s</span>
+      <span class="log-line ok">✓ RECOVERY flashé  — 0m 22s</span>
+      <span class="log-line ok">✓ SYSTEM flashé    — 1m 04s</span>
+      <span class="log-line ok">✓ USERDATA flashé  — 0m 24s</span>
+      <span class="log-line ok">✓ MODEM flashé     — 0m 26s</span>
+      <span class="log-line ok">✓ Flash complet — 2m 14s — 0 erreur(s)</span>
+      <span class="log-line info">› Téléphone redémarré avec succès.</span>
+    </div>
+
+    <!-- Pro upsell -->
+    <div class="pro-banner">
+      <div class="pro-banner-text">
+        <div class="pro-banner-title" id="pro-title">🔓 Débloquer LUX Pro</div>
+        <div class="pro-banner-desc" id="pro-desc">Bypass FRP, Flash Bootloader, support prioritaire et mises à jour illimitées.</div>
+      </div>
+      <button class="btn-upgrade" id="btn-upgrade">Activer Pro →</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- Bottom bar -->
+<div class="bottombar">
+  <div class="bottom-info">LUX Flash Tool &nbsp;|&nbsp; <span>DRK Tech</span> &nbsp;|&nbsp; 2026</div>
+  <div class="bottom-info" id="bottom-step">Étape 4 / 4 — Terminé</div>
+</div>
+
+<script>
+  const tx = {
+    fr: {
+      pageTitle:"Rapport Final",
+      step1:"Accueil", step2:"Détection", step3:"Flash", step4:"Résultat",
+      resultHeadline:"FLASH RÉUSSI",
+      resultSub:"Opération terminée sans erreur",
+      statParts:"Partitions", statTime:"Durée", statErrors:"Erreurs",
+      btnNew:"⚡ \u00a0Nouveau Flash",
+      btnReport:"📄 \u00a0Exporter le Rapport",
+      btnHome:"🏠 \u00a0Retour Accueil",
+      secPartitions:"Résultat par Partition",
+      secLog:"Journal Complet",
+      badgeOk:"SUCCÈS", badgeWarn:"AVERTISSEMENT",
+      proTitle:"🔓 Débloquer LUX Pro",
+      proDesc:"Bypass FRP, Flash Bootloader, support prioritaire et mises à jour illimitées.",
+      btnUpgrade:"Activer Pro →",
+      bottomStep:"Étape 4 / 4 — Terminé"
+    },
+    es: {
+      pageTitle:"Informe Final",
+      step1:"Inicio", step2:"Detección", step3:"Flash", step4:"Resultado",
+      resultHeadline:"FLASH EXITOSO",
+      resultSub:"Operación completada sin errores",
+      statParts:"Particiones", statTime:"Duración", statErrors:"Errores",
+      btnNew:"⚡ \u00a0Nuevo Flash",
+      btnReport:"📄 \u00a0Exportar Informe",
+      btnHome:"🏠 \u00a0Volver al Inicio",
+      secPartitions:"Resultado por Partición",
+      secLog:"Registro Completo",
+      badgeOk:"ÉXITO", badgeWarn:"ADVERTENCIA",
+      proTitle:"🔓 Activar LUX Pro",
+      proDesc:"Bypass FRP, Flash Bootloader, soporte prioritario y actualizaciones ilimitadas.",
+      btnUpgrade:"Activar Pro →",
+      bottomStep:"Paso 4 / 4 — Completado"
+    }
+  };
+
+  function setLang(l) {
+    const t = tx[l];
+    document.getElementById('page-title').textContent = t.pageTitle;
+    ['step1','step2','step3','step4'].forEach(id => document.getElementById(id).textContent = t[id]);
+    document.getElementById('result-headline').textContent = t.resultHeadline;
+    document.getElementById('result-sub').textContent = t.resultSub;
+    document.getElementById('stat-parts').textContent = t.statParts;
+    document.getElementById('stat-time').textContent = t.statTime;
+    document.getElementById('stat-errors').textContent = t.statErrors;
+    document.getElementById('btn-new').innerHTML = t.btnNew;
+    document.getElementById('btn-report').innerHTML = t.btnReport;
+    document.getElementById('btn-home').innerHTML = t.btnHome;
+    document.getElementById('sec-partitions').textContent = t.secPartitions;
+    document.getElementById('sec-log').textContent = t.secLog;
+    ['b-boot','b-rec','b-sys','b-usr','b-mod'].forEach(id => {
+      document.getElementById(id).textContent = t.badgeOk;
+    });
+    document.getElementById('pro-title').textContent = t.proTitle;
+    document.getElementById('pro-desc').textContent = t.proDesc;
+    document.getElementById('btn-upgrade').textContent = t.btnUpgrade;
+    document.getElementById('bottom-step').textContent = t.bottomStep;
+    document.querySelectorAll('.lang-btn').forEach(b => {
+      b.classList.toggle('active', b.textContent === l.toUpperCase());
+    });
+  }
+</script>
+</body>
+</html>
